@@ -12,8 +12,8 @@ updatePositionB ((depth, horizontal), aim) command = case command of
 
 main = do
   inp <- getContents
-  let dat = map ((\[str, n] -> (str, read n)) . words) . lines $ inp :: [(String, Int)]
-      finalPositionA = foldl updatePositionA (0, 0) dat
-      finalPositionB = foldl updatePositionB ((0, 0), 0) dat
+  let pardedData = map ((\[str, n] -> (str, read n)) . words) . lines $ inp :: [(String, Int)]
+      finalPositionA = foldl updatePositionA (0, 0) pardedData
+      finalPositionB = foldl updatePositionB ((0, 0), 0) pardedData
   print . uncurry (*) $ finalPositionA;
   print . uncurry (*) $ fst finalPositionB;

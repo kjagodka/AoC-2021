@@ -15,7 +15,7 @@ walkingSum = walkingSum' []
     walkingSum' acc n list =
       if length list < n
         then reverse acc
-        else walkingSum' ((sum (take n list)):acc) n (tail list)
+        else walkingSum' (sum (take n list):acc) n (tail list)
 
 main :: IO ()
 main = do {
