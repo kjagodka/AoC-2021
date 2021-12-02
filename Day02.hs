@@ -1,10 +1,19 @@
-updatePosition :: (Int, Int) -> (String, Int) -> (Int, Int)
-updatePosition (depth, horizontal) ("up", distance) = (depth - distance, horizontal)
-updatePosition (depth, horizontal) ("down", distance) = (depth + distance, horizontal)
-updatePosition (depth, horizontal) ("forward", distance) = (depth, horizontal + distance)
+updatePositionA :: (Int, Int) -> (String, Int) -> (Int, Int)
+updatePositionA (depth, horizontal) command = case command of
+  ("up", distance)      -> (depth + distance, horizontal)
+  ("down", distance)    -> (depth - distance, horizontal)
+  ("forward", distance) -> (depth, horizontal + distance)
+
+updatePositionB :: ((Int, Int), Int) -> (String, Int) -> ((Int, Int), Int)
+updatePositionB ((depth, horizontal), aim) command = case command of
+  ("up", angle)         -> ((depth, horizontal), aim - angle)
+  ("down", angle)       -> ((depth, horizontal), aim + angle)
+  ("forward", distance) -> ((depth + distance * aim, horizontal + distance), aim)
 
 main = do
   inp <- getContents
-  let dat = map ((\[str, n] -> (str, (read :: String -> Int) n)) . words) . lines $ inp
-      finalPosition = foldl updatePosition (0, 0) dat
-  print . uncurry (*) $ finalPosition;
+  let dat = map ((\[str, n] -> (str, read n)) . words) . lines $ inp :: [(String, Int)]
+      finalPositionA = foldl updatePositionA (0, 0) dat
+      finalPositionB = foldl updatePositionB ((0, 0), 0) dat
+  print . uncurry (*) $ finalPositionA;
+  print . uncurry (*) $ fst finalPositionB;
