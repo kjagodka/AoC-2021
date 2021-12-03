@@ -1,21 +1,33 @@
-import Data.List
+import Data.List ( foldl', elemIndices, transpose )
+import Data.Char (digitToInt)
 
 count :: Eq a => a -> [a] -> Int
 count elem list = length $ elemIndices elem list
 
-digitListToInt :: Num a => a -> [a] -> a
-digitListToInt base digits = fst $ foldr (\digit (acc, pow) -> (acc + pow * digit, pow * base)) (0, 1) digits
+mostCommonBits :: [[Char]] -> [Char]
+mostCommonBits lns = map (\col -> if count '1' col >= count '0' col then '1' else '0' ) $ transpose lns
 
-binaryListToInt :: [Integer] -> Integer
-binaryListToInt = digitListToInt 2
+leastCommonBits :: [[Char]] -> [Char]
+leastCommonBits lns = map (\digit -> if digit == '1' then '0' else '1' ) $ mostCommonBits lns
+
+binaryToInt :: [Char] -> Int
+binaryToInt = foldl' (\acc x -> acc * 2 + digitToInt x) 0
+
+findRating :: ([[Char]] -> [Char]) -> [[Char]] -> [Char]
+findRating bitSelector lns = findRating' 0 lns
+  where
+    len = length . head $ lns
+    findRating' _ [x] = x
+    findRating' index lns =
+      let filterBit = bitSelector lns !! index
+      in findRating' ((index + 1) `mod` len) $ filter (\line -> line !! index == filterBit) lns
+
 
 main = do {
   dta <- getContents;
-  let
-    columns = map (map (read . pure :: Char->Int)) $ transpose $ lines dta;
-    len = length columns
-    mostCommonBits = map (\col -> if count 1 col > count 0 col then 1 else 0 ) columns
-    leastCommonBits = map (1 -) mostCommonBits
-
-  in print $ binaryListToInt mostCommonBits * binaryListToInt leastCommonBits
+  let numbers = lines dta
+      gammaRate = (binaryToInt . mostCommonBits $ numbers) * (binaryToInt . leastCommonBits $ numbers)
+      oxygenRating = binaryToInt $ findRating mostCommonBits numbers
+      co2Rating = binaryToInt $ findRating leastCommonBits numbers
+  in print (gammaRate, oxygenRating * co2Rating)
   }
