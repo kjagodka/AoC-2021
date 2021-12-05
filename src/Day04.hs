@@ -1,4 +1,4 @@
-import Data.List.Split
+import Data.List.Split ( splitOn )
 import Data.List ( inits, minimumBy, maximumBy, transpose )
 import Data.Ord (comparing)
 
@@ -12,11 +12,11 @@ isBoardWinning board numbers =
   any (\col -> boardSize == countCommonElements numbers col) (transpose board)
   where boardSize = length . head $ board
 
+--returns number of picked numbers needed to complete some row or column or given board
 numbersToWin :: Eq a => [[a]] -> [a] -> Int
 numbersToWin board numbers =
   let winningLists = filter (isBoardWinning board) $ inits numbers
-  in
-    length . head $ winningLists
+  in length . head $ winningLists
 
 findWinningBoard :: Eq a => [[[a]]] -> [a] -> [[a]]
 findWinningBoard boards numbers =
@@ -30,6 +30,7 @@ remainingNumbers :: (Eq a) => [[a]] -> [a] -> [[a]]
 remainingNumbers board numbers = 
   map (filter (`notElem` numbers)) board
 
+main :: IO ()
 main = do
   inp <- getContents
   let numbers = map read $ splitOn "," $ head $ lines inp :: [Int]
