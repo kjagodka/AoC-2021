@@ -1,7 +1,6 @@
 import Data.List.Split
-import Data.List ( inits, minimumBy, transpose )
+import Data.List ( inits, minimumBy, maximumBy, transpose )
 import Data.Ord (comparing)
-import qualified Data.Bifunctor
 
 countCommonElements :: Eq a => [a] -> [a] -> Int
 countCommonElements xs ys =
@@ -13,8 +12,6 @@ isBoardWinning board numbers =
   any (\col -> boardSize == countCommonElements numbers col) (transpose board)
   where boardSize = length . head $ board
 
-
-
 numbersToWin :: Eq a => [[a]] -> [a] -> Int
 numbersToWin board numbers =
   let winningLists = filter (isBoardWinning board) $ inits numbers
@@ -25,10 +22,13 @@ findWinningBoard :: Eq a => [[[a]]] -> [a] -> [[a]]
 findWinningBoard boards numbers =
   minimumBy (comparing (`numbersToWin` numbers)) boards
 
+findLoosingBoard :: Eq a => [[[a]]] -> [a] -> [[a]]
+findLoosingBoard boards numbers =
+  maximumBy (comparing (`numbersToWin` numbers)) boards
+
 remainingNumbers :: (Eq a) => [[a]] -> [a] -> [[a]]
 remainingNumbers board numbers = 
   map (filter (`notElem` numbers)) board
-
 
 main = do
   inp <- getContents
@@ -37,5 +37,8 @@ main = do
       winningBoard = findWinningBoard boards numbers
       winningBoardNumbers = take (numbersToWin winningBoard numbers) numbers
       answer1 = last winningBoardNumbers * (sum . concat $ remainingNumbers winningBoard winningBoardNumbers)
+      loosingBoard = findLoosingBoard boards numbers
+      loosingBoardNumbers = take (numbersToWin loosingBoard numbers) numbers
+      answer2 = last loosingBoardNumbers * (sum . concat $ remainingNumbers loosingBoard loosingBoardNumbers)
 
-  print answer1
+  print (answer1, answer2)
