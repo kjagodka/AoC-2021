@@ -3,7 +3,7 @@ import Data.Char (isDigit)
 import Data.List(tails, nub)
 import qualified Data.Map
 
-data Point = Point Int Int deriving (Eq, Ord, Show)
+data Point = Point Int Int deriving (Eq, Ord)
 
 data Line = Line Point Point
 
@@ -14,11 +14,8 @@ lineToPoints (Line (Point ax ay) (Point bx by)) =
       len = if dx /= 0 then dx * (bx - ax) else dy * (by - ay)
   in  [Point (ax + i * dx) (ay + i*dy) | i <- [0..len]]
 
-isHorizontal :: Line -> Bool
-isHorizontal (Line (Point _ ay) (Point _ by)) = ay == by
-
-isVertical :: Line -> Bool
-isVertical (Line (Point ax _) (Point bx _)) = ax == bx
+isDiagonal :: Line -> Bool 
+isDiagonal (Line (Point ax ay) (Point bx by)) = ax /= bx && ay /= by
 
 addPointToMap :: Data.Map.Map Point Int -> Point -> Data.Map.Map Point Int
 addPointToMap pointsMap point =
@@ -35,6 +32,6 @@ main :: IO ()
 main = do
   inp <- getContents
   let ventLines = map ((\[[a, b], [c, d]] -> Line (Point a b) (Point c d)) . map (map (read :: String -> Int) . splitOn ",") . splitOn " -> ") . lines $ inp
-      horOrVertLines = filter (\ln -> isHorizontal ln || isVertical ln) ventLines
+      horOrVertLines = filter (not . isDiagonal) ventLines
   -- print . length $ intersects
   print (countDangerousPoints horOrVertLines, countDangerousPoints ventLines)
