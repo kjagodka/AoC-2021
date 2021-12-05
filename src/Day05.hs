@@ -1,6 +1,6 @@
-import Data.List.Split (splitOn)
 import Data.Char (isDigit)
-import Data.List(tails, nub)
+import Data.List (nub, tails)
+import Data.List.Split (splitOn)
 import qualified Data.Map
 
 data Point = Point Int Int deriving (Eq, Ord)
@@ -12,14 +12,14 @@ lineToPoints (Line (Point ax ay) (Point bx by)) =
   let dx = signum (bx - ax)
       dy = signum (by - ay)
       len = if dx /= 0 then dx * (bx - ax) else dy * (by - ay)
-  in  [Point (ax + i * dx) (ay + i*dy) | i <- [0..len]]
+   in [Point (ax + i * dx) (ay + i * dy) | i <- [0 .. len]]
 
-isDiagonal :: Line -> Bool 
+isDiagonal :: Line -> Bool
 isDiagonal (Line (Point ax ay) (Point bx by)) = ax /= bx && ay /= by
 
 addPointToMap :: Data.Map.Map Point Int -> Point -> Data.Map.Map Point Int
 addPointToMap pointsMap point =
-    Data.Map.insert point (1 + Data.Map.findWithDefault 0 point pointsMap) pointsMap
+  Data.Map.insert point (1 + Data.Map.findWithDefault 0 point pointsMap) pointsMap
 
 addLineToMap :: Data.Map.Map Point Int -> Line -> Data.Map.Map Point Int
 addLineToMap pointsMap line =
@@ -33,5 +33,4 @@ main = do
   inp <- getContents
   let ventLines = map ((\[[a, b], [c, d]] -> Line (Point a b) (Point c d)) . map (map (read :: String -> Int) . splitOn ",") . splitOn " -> ") . lines $ inp
       horOrVertLines = filter (not . isDiagonal) ventLines
-  -- print . length $ intersects
   print (countDangerousPoints horOrVertLines, countDangerousPoints ventLines)
