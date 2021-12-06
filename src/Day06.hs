@@ -20,14 +20,10 @@ updatePopulation (AgesPops counts) =
       newPop = otherAdults ++ [fertile + fish7, fish8, fertile]
    in AgesPops newPop
 
-composeWithItself :: Int -> (a -> a) -> (a -> a)
-composeWithItself n f = iterate (f .) id !! n
-
 main :: IO ()
 main = do
   inp <- getContents
   let lanternfishInitPopulation = lanternfishPopFromList . map read . splitOn "," $ inp
-      popAfter80Days = composeWithItself 80 updatePopulation lanternfishInitPopulation
-      popAfter256Days = composeWithItself 256 updatePopulation lanternfishInitPopulation
-  print . countFish $ popAfter80Days
-  print . countFish $ popAfter256Days
+      populationAfterNDays = iterate updatePopulation lanternfishInitPopulation
+  print . countFish $ populationAfterNDays !! 80
+  print . countFish $ populationAfterNDays !! 256
