@@ -1,11 +1,10 @@
-import Data.List(elemIndices)
-import qualified Data.Sequence as S
 import Data.List.Split (splitOn)
+import qualified Data.Sequence as S
 
 newtype FishPopulation = FishPopulation (S.Seq Int)
 
 count :: Eq a => [a] -> a -> Int
-count list elem = length $ elemIndices elem list
+count list elem = length $ filter (== elem) list
 
 fishListToPopulation :: [Int] -> FishPopulation
 fishListToPopulation fishList = FishPopulation (S.fromFunction 9 $ count fishList)
