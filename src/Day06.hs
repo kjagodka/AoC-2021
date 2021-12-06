@@ -8,7 +8,7 @@ count :: Eq a => [a] -> a -> Int
 count list elem = length $ elemIndices elem list
 
 lanternfishPopFromList :: [Int] -> LanternfishPop
-lanternfishPopFromList fishList = AgesPops . S.fromList $ map (count fishList) [0 .. 8]
+lanternfishPopFromList fishList = AgesPops (S.fromFunction 9 $ count fishList)
 
 countFish :: LanternfishPop -> Int
 countFish (AgesPops counts) = sum counts
