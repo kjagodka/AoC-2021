@@ -1,24 +1,23 @@
 import Data.List (elemIndices)
+import qualified Data.Sequence as S
 import Data.List.Split (splitOn)
 
-newtype LanternfishPop = AgesPops [Int] deriving (Show)
+newtype LanternfishPop = AgesPops (S.Seq Int)
 
 count :: Eq a => [a] -> a -> Int
 count list elem = length $ elemIndices elem list
 
 lanternfishPopFromList :: [Int] -> LanternfishPop
-lanternfishPopFromList fishList = AgesPops $ map (count fishList) [0 .. 8]
+lanternfishPopFromList fishList = AgesPops . S.fromList $ map (count fishList) [0 .. 8]
 
 countFish :: LanternfishPop -> Int
 countFish (AgesPops counts) = sum counts
 
 updatePopulation :: LanternfishPop -> LanternfishPop
 updatePopulation (AgesPops counts) =
-  let fertile = head counts --fish with internal counter 0
-      otherAdults = take 6 $ tail counts --fish with internal counter 1..5
-      [fish7, fish8] = drop 7 counts --fish with internal counter 7..8
-      newPop = otherAdults ++ [fertile + fish7, fish8, fertile]
-   in AgesPops newPop
+  let fertile = S.index counts 0
+      others = S.drop 1 counts
+   in AgesPops (S.insertAt 8 fertile . S.adjust' (+ fertile) 6 $ others)
 
 main :: IO ()
 main = do
