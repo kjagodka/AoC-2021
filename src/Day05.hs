@@ -19,7 +19,7 @@ isDiagonal (Line (Point ax ay) (Point bx by)) = ax /= bx && ay /= by
 
 addPointToMap :: Data.Map.Map Point Int -> Point -> Data.Map.Map Point Int
 addPointToMap pointsMap point =
-  Data.Map.insert point (1 + Data.Map.findWithDefault 0 point pointsMap) pointsMap
+  Data.Map.insertWith (+) point 1 pointsMap
 
 addLineToMap :: Data.Map.Map Point Int -> Line -> Data.Map.Map Point Int
 addLineToMap pointsMap line =
