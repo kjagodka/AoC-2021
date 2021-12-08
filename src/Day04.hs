@@ -1,46 +1,53 @@
-import Data.List (inits, maximumBy, minimumBy, transpose)
+import Data.List (inits, maximumBy, minimumBy, transpose, find)
 import Data.List.Split (splitOn)
 import Data.Ord (comparing)
+import Data.Maybe (isNothing, catMaybes, fromJust)
+
+newtype Board = Board [[Maybe Int]]
 
 countCommonElements :: Eq a => [a] -> [a] -> Int
 countCommonElements xs ys =
   length $ filter (`elem` ys) xs
 
-isBoardWinning :: Eq a => [[a]] -> [a] -> Bool
-isBoardWinning board numbers =
-  any (\row -> boardSize == countCommonElements numbers row) board
-    || any (\col -> boardSize == countCommonElements numbers col) (transpose board)
-  where
-    boardSize = length . head $ board
+isBoardWinning :: Board -> Bool
+isBoardWinning (Board board) =
+  any (all isNothing) board ||
+    any (all isNothing) (transpose board)
 
---returns number of picked numbers needed to complete some row or column or given board
-numbersToWin :: Eq a => [[a]] -> [a] -> Int
+crossNumber :: Board -> Int -> Board
+crossNumber (Board board) n =
+  Board $ map (map (\num -> if num == Just n then Nothing else num)) board
+
+--returns number of picked numbers needed to complete some row or column on given board
+numbersToWin :: Board -> [Int] -> Int
 numbersToWin board numbers =
-  let winningLists = filter (isBoardWinning board) $ inits numbers
-   in length . head $ winningLists
+  let boardStates = foldl (\(prevState:states) n -> crossNumber prevState n:prevState:states) [board] numbers
+   in length . filter (not . isBoardWinning) $ boardStates
 
-findWinningBoard :: Eq a => [[[a]]] -> [a] -> [[a]]
+
+findWinningBoard :: [Board] -> [Int] -> Board
 findWinningBoard boards numbers =
   minimumBy (comparing (`numbersToWin` numbers)) boards
 
-findLoosingBoard :: Eq a => [[[a]]] -> [a] -> [[a]]
+findLoosingBoard :: [Board] -> [Int] -> Board
 findLoosingBoard boards numbers =
   maximumBy (comparing (`numbersToWin` numbers)) boards
 
-remainingNumbers :: (Eq a) => [[a]] -> [a] -> [[a]]
+remainingNumbers ::  Board -> [Int] -> [Int]
 remainingNumbers board numbers =
-  map (filter (`notElem` numbers)) board
+  let (Board b) = foldl crossNumber board numbers
+   in Data.Maybe.catMaybes . concat $ b
 
 main :: IO ()
 main = do
   inp <- getContents
   let numbers = map read . splitOn "," . head . lines $ inp :: [Int]
-      boards = splitOn [[]] $ map (map read . words) . tail . tail $ lines inp :: [[[Int]]]
+      boards = map Board $ splitOn [[]] $ map (map (Just . read) . words) . tail . tail $ lines inp :: [Board]
       winningBoard = findWinningBoard boards numbers
       winningBoardNumbers = take (numbersToWin winningBoard numbers) numbers
-      answer1 = last winningBoardNumbers * (sum . concat . remainingNumbers winningBoard $ winningBoardNumbers)
+      answer1 = last winningBoardNumbers * (sum . remainingNumbers winningBoard $ winningBoardNumbers)
       loosingBoard = findLoosingBoard boards numbers
       loosingBoardNumbers = take (numbersToWin loosingBoard numbers) numbers
-      answer2 = last loosingBoardNumbers * (sum . concat $ remainingNumbers loosingBoard loosingBoardNumbers)
+      answer2 = last loosingBoardNumbers * (sum . remainingNumbers loosingBoard $ loosingBoardNumbers)
 
   print (answer1, answer2)
