@@ -1,6 +1,6 @@
 import BasePrelude (on)
 import Data.Char (digitToInt)
-import Data.List (minimumBy, sortBy)
+import Data.List (find, minimumBy, sortBy)
 import Data.Maybe (fromJust, isJust, mapMaybe, maybe)
 import qualified Data.Vector as V
 
@@ -15,7 +15,7 @@ heightMapFromInts :: [[Int]] -> HeightMap
 heightMapFromInts = V.map V.fromList . V.fromList
 
 getHeight :: HeightMap -> Coords -> Maybe Int
-getHeight hmap (row, col) = (>>=) (hmap V.!? row) (V.!? col)
+getHeight hmap (row, col) = (hmap V.!? row) >>= (V.!? col)
 
 isIndex :: HeightMap -> Coords -> Bool
 isIndex hmap = isJust . getHeight hmap
@@ -24,10 +24,16 @@ neighbours :: HeightMap -> Coords -> [Coords]
 neighbours hmap (row, col) =
   filter (isIndex hmap) [(row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1)]
 
+minNeighbour :: HeightMap -> Coords -> Coords
+minNeighbour hmap coords =
+  minimumBy
+    (compare `on` fromJust . getHeight hmap)
+    $ neighbours hmap coords
+
 isLocalMininum :: HeightMap -> Coords -> Bool
 isLocalMininum hmap coords =
-  let neigboursMinimum = minimum . mapMaybe (getHeight hmap) $ neighbours hmap coords
-   in (fromJust . getHeight hmap $ coords) < neigboursMinimum
+  getHeight hmap coords
+    < getHeight hmap (minNeighbour hmap coords)
 
 getIndices :: HeightMap -> [Coords]
 getIndices hmap =
@@ -42,12 +48,10 @@ isBasin :: HeightMap -> Coords -> Bool
 isBasin hmap coords = Just 9 /= getHeight hmap coords
 
 followGradient :: HeightMap -> Coords -> Coords
-followGradient hmap coords
-  | isLocalMininum hmap coords = coords
-  | otherwise =
-    followGradient hmap
-      . minimumBy (compare `on` fromJust . getHeight hmap)
-      $ neighbours hmap coords
+followGradient hmap =
+  fromJust
+    . find (isLocalMininum hmap)
+    . iterate (minNeighbour hmap)
 
 part1 :: HeightMap -> IO ()
 part1 hmap =
