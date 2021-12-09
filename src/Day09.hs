@@ -59,14 +59,12 @@ part2 hmap =
   let basinsCoordsList = filter (isBasin hmap) (getIndices hmap)
       mapped = map (followGradient hmap) basinsCoordsList
       localMinima = findLocalMinima hmap
-      sizes = sortBy (flip compare). map (count mapped) $ localMinima
+      sizes = sortBy (flip compare) . map (count mapped) $ localMinima
    in print . product . take 3 $ sizes
 
 main :: IO ()
 main = do
   stdin <- getContents
   let hmap = heightMapFromInts . map (map digitToInt) . lines $ stdin
-      coordsList = getIndices hmap
-      localMinima = findLocalMinima hmap
   part1 hmap
   part2 hmap
