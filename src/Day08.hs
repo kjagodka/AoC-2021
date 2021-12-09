@@ -32,14 +32,15 @@ displayPermutations (Display segments) = map Display $ permutations segments
 displayFromString :: String -> Display
 displayFromString s = Display $ map (\n -> statusFromBool $ elem (iterate succ 'a' !! n) s) [0 .. 6]
 
-decodeDisplays :: [Display] -> Maybe [Int]
+decodeDisplays :: [Display] -> [Int]
 decodeDisplays displays =
   let permutations = transpose $ map displayPermutations displays
       checkPermuatation :: [Display] -> Bool
       checkPermuatation = all isNumber
-      findPermutation :: [[Display]] -> Maybe [Display]
-      findPermutation perms = find checkPermuatation perms
-   in reverse . take 4 . reverse . map (fromJust . displayToInt) <$> findPermutation permutations
+      findPermutation :: [[Display]] -> [Display]
+      findPermutation perms = fromJust . find checkPermuatation $ perms
+      len = length displays :: Int
+   in drop (len - 4) . map (fromJust . displayToInt) . findPermutation $ permutations
 
 digitsToInt :: Int -> [Int] -> Int
 digitsToInt base = foldl (\num digit -> base * num + digit) 0
@@ -54,8 +55,6 @@ main :: IO ()
 main = do
   stdin <- getContents
   let displays = map (map displayFromString . words . concat . splitOn " |") . lines $ stdin
-      maybeOutputValues = map decodeDisplays displays
-      outputValues = map fromJust maybeOutputValues
-  if all isJust maybeOutputValues
-    then do part1 outputValues; part2 outputValues
-    else print "Some entry was undecodable"
+      outputValues = map decodeDisplays displays
+  part1 outputValues
+  part2 outputValues
