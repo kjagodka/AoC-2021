@@ -1,4 +1,3 @@
-import Control.Monad.Except (MonadError (throwError))
 import Data.Either (lefts, rights)
 import Data.Foldable (foldlM)
 import Data.List (elemIndex, sort)
