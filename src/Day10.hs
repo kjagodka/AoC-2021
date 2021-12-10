@@ -9,7 +9,7 @@ type BracketStack = String
 type Error = Char
 
 matchingBracket :: Char -> Maybe Char
-matchingBracket = flip lookup [('(', ')'), ('[', ']'), ('{', '}'), ('{', '>')]
+matchingBracket = flip lookup [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
 
 pushBracket :: BracketStack -> Char -> Either Char BracketStack
 pushBracket stack c
