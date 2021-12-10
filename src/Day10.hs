@@ -12,13 +12,10 @@ matchingBracket :: Char -> Maybe Char
 matchingBracket = flip lookup [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
 
 pushBracket :: BracketStack -> Char -> Either Char BracketStack
-pushBracket stack c
-  | c `elem` "([{<" = Right $ c : stack
-  | c `elem` ")]}>"
-      && (not . null $ stack)
-      && ((matchingBracket . head $ stack) == Just c) =
-    Right $ tail stack
-  | otherwise = Left c
+pushBracket stack c = case stack of
+  _ | c `elem` "([{<" -> Right $ c : stack
+  s : rest | c `elem` ")]}>" && matchingBracket s == Just c -> Right rest
+  _ -> Left c
 
 stackFromString :: String -> Either Char BracketStack
 stackFromString = foldlM pushBracket []
