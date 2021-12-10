@@ -1,7 +1,7 @@
 import Data.Either (lefts, rights)
 import Data.Foldable (foldlM)
 import Data.List (elemIndex, sort)
-import Data.Maybe (fromJust)
+import Data.Maybe (mapMaybe)
 
 type BracketStack = String
 
@@ -19,20 +19,14 @@ pushBracket stack c = case stack of
 stackFromString :: String -> Either Char BracketStack
 stackFromString = foldlM pushBracket []
 
-errorValue :: Error -> Int
-errorValue ')' = 3
-errorValue ']' = 57
-errorValue '}' = 1197
-errorValue '>' = 25137
+errorValue :: Error -> Maybe Int
+errorValue = flip lookup [(')', 3), (']', 57), ('}', 1197), ('>', 25137)]
 
-autocompleteValue :: Char -> Int
-autocompleteValue ')' = 1
-autocompleteValue ']' = 2
-autocompleteValue '}' = 3
-autocompleteValue '>' = 4
+autocompleteValue :: Char -> Maybe Int
+autocompleteValue = flip lookup [(')', 1), (']', 2), ('}', 3), ('>', 4)]
 
 part1 :: [Error] -> Int
-part1 = sum . map errorValue
+part1 = sum . mapMaybe errorValue
 
 median :: [Int] -> Int
 median list =
@@ -41,7 +35,7 @@ median list =
    in sort list !! (len `div` 2)
 
 part2 :: [BracketStack] -> Int
-part2 = median . map (foldl (\acc c -> (autocompleteValue . fromJust . matchingBracket $ c) + 5 * acc) 0)
+part2 = median . mapMaybe (foldlM (\acc c -> matchingBracket c >>= autocompleteValue >>= \n -> Just (5*acc + n)) 0)
 
 main :: IO ()
 main = do
