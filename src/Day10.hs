@@ -10,7 +10,7 @@ type Error = Char
 matchingBracket :: Char -> Maybe Char
 matchingBracket = flip lookup [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
 
-pushBracket :: BracketStack -> Char -> Either Char BracketStack
+pushBracket :: BracketStack -> Char -> Either Error BracketStack
 pushBracket stack c = case stack of
   _ | c `elem` "([{<" -> Right $ c : stack
   s : rest | c `elem` ")]}>" && matchingBracket s == Just c -> Right rest
@@ -19,7 +19,7 @@ pushBracket stack c = case stack of
 stackFromString :: String -> Either Char BracketStack
 stackFromString = foldlM pushBracket []
 
-errorValue :: Char -> Int
+errorValue :: Error -> Int
 errorValue ')' = 3
 errorValue ']' = 57
 errorValue '}' = 1197
@@ -31,7 +31,7 @@ autocompleteValue ']' = 2
 autocompleteValue '}' = 3
 autocompleteValue '>' = 4
 
-part1 :: [Char] -> Int
+part1 :: [Error] -> Int
 part1 = sum . map errorValue
 
 median :: [Int] -> Int
