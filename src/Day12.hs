@@ -4,7 +4,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Retrie.PatternMap.Class as M
 
-data Cave = SmallCave String | BigCave String | CaveStart | CaveEnd
+data Cave = CaveSmall String | CaveBig String | CaveStart | CaveEnd
   deriving (Eq, Ord)
 
 type CaveNeighboursMap = M.Map Cave [Cave]
@@ -24,14 +24,15 @@ stringToCave :: String -> Cave
 stringToCave "start" = CaveStart
 stringToCave "end" = CaveEnd
 stringToCave s = case s of
-  c : _ | isLower c -> SmallCave s
-  c : _ | isUpper c -> BigCave s
+  c : _ | isLower c -> CaveSmall s
+  c : _ | isUpper c -> CaveBig s
+  _ -> undefined
 
 countPaths :: CaveGraph -> S.Set Cave -> Bool -> Cave -> Int
 countPaths graph visited canVisitAgain current = case current of
   CaveEnd -> 1
-  BigCave _ -> sum $ map (countPaths graph visited canVisitAgain) neighbors
-  SmallCave _
+  CaveBig _ -> sum $ map (countPaths graph visited canVisitAgain) neighbors
+  CaveSmall _
     | S.member current visited && canVisitAgain ->
       sum $ map (countPaths graph visited False) neighbors
   _ | S.member current visited -> 0
