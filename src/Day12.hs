@@ -27,18 +27,26 @@ stringToCave s = case s of
   c : _ | isLower c -> SmallCave s
   c : _ | isUpper c -> BigCave s
 
-countPaths :: CaveGraph -> S.Set Cave -> Cave -> Int
-countPaths graph visited current = case current of
+countPaths :: CaveGraph -> S.Set Cave -> Bool -> Cave -> Int
+countPaths graph visited canVisitAgain current = case current of
   CaveEnd -> 1
-  BigCave _ -> sum $ map (countPaths graph visited) (graph current)
+  BigCave _ -> sum $ map (countPaths graph visited canVisitAgain) neighbors
+  SmallCave _
+    | S.member current visited && canVisitAgain ->
+      sum $ map (countPaths graph visited False) neighbors
   _ | S.member current visited -> 0
-  _ ->
-    let visited' = S.insert current visited
-     in sum $ map (countPaths graph visited') (graph current)
+  _ -> sum $ map (countPaths graph visited' canVisitAgain) neighbors
+  where
+    neighbors = graph current
+    visited' = S.insert current visited
 
 part1 :: CaveGraph -> IO ()
 part1 graph = do
-  print $ countPaths graph S.empty CaveStart
+  print $ countPaths graph S.empty True CaveStart
+
+part2 :: CaveGraph -> IO ()
+part2 graph = do
+  print $ countPaths graph S.empty False CaveStart
 
 main :: IO ()
 main = do
@@ -46,3 +54,4 @@ main = do
   let edges = map (map stringToCave . splitOn "-") $ lines stdin
   let graph = getGraph . foldl addEdge M.empty $ edges
   part1 graph
+  part2 graph
