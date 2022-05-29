@@ -47,19 +47,17 @@ renderPixel :: Bool -> Char
 renderPixel True = 'X'
 renderPixel False = ' '
 
-renderRow :: Sheet -> Int -> Int -> Int -> String
-renderRow sheet colsFrom colsTo rowNo =
-  [ renderPixel $ (`S.member` sheet) (col, rowNo)
-    | col <- [colsFrom .. colsTo]
+renderRow :: Sheet -> Int -> Int -> String
+renderRow sheet lastCol row =
+  [ renderPixel $ (`S.member` sheet) (col, row)
+    | col <- [0 .. lastCol]
   ]
 
 renderSheet :: Sheet -> String
 renderSheet sheet = do
-  let colsTo = S.findMax $ S.map fst sheet
-      colsFrom = S.findMin $ S.map fst sheet
-      rowsTo = S.findMax $ S.map snd sheet
-      rowsFrom = S.findMin $ S.map snd sheet
-   in unlines [renderRow sheet colsFrom colsTo row | row <- [rowsFrom .. rowsTo]]
+  let lastCol = S.findMax $ S.map fst sheet
+      lastRow = S.findMax $ S.map snd sheet
+   in unlines [renderRow sheet lastCol row | row <- [0 .. lastRow]]
 
 part1 :: Sheet -> [Fold] -> IO ()
 part1 sheet folds =
