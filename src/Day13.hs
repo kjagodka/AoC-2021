@@ -4,18 +4,40 @@ import Data.Tuple (swap)
 
 type Point = (Int, Int)
 
-type Sheet = S.Set Point
+newtype Sheet = Sheet (S.Set Point)
 
 data Axis = X Int | Y Int
 
 type Fold = Sheet -> Sheet
 
+instance Show Sheet where
+  show (Sheet s) = unlines $ map showRow rows
+    where
+      cols = [0 .. S.findMax $ S.map fst s] :: [Int]
+      rows = [0 .. S.findMax $ S.map snd s] :: [Int]
+
+      showRow :: Int -> String
+      showRow row = map (showPixel . getPixel row) cols
+
+      getPixel :: Int -> Int -> Bool
+      getPixel row col = S.member (col, row) s
+
+      showPixel :: Bool -> Char
+      showPixel True = 'X'
+      showPixel False = ' '
+
 toTuple :: [a] -> (a, a)
-toTuple (x : y : _) = (x, y)
+toTuple [x, y] = (x, y)
 toTuple _ = undefined
 
 readPoint :: String -> Point
 readPoint s = toTuple . map read $ splitOn [','] s
+
+pointsToSheet :: [Point] -> Sheet
+pointsToSheet = Sheet . S.fromList
+
+sheetSize :: Sheet -> Int
+sheetSize (Sheet s) = S.size s
 
 readAxis :: String -> Axis
 readAxis s =
@@ -34,39 +56,23 @@ flipPoint (X dist) (x, y) =
 flipPoint (Y dist) point = swap . flipPoint (X dist) . swap $ point
 
 axisToFold :: Axis -> Sheet -> Sheet
-axisToFold = S.map . flipPoint
+axisToFold axis (Sheet s) = Sheet $ S.map (flipPoint axis) s
 
 parseInput :: String -> (Sheet, [Fold])
 parseInput input =
   let (pointStrings, foldStrings) = toTuple . splitOn [[]] . lines $ input
       points = map readPoint pointStrings
       folds = map (axisToFold . readAxis) foldStrings
-   in (S.fromList points, folds)
-
-renderPixel :: Bool -> Char
-renderPixel True = 'X'
-renderPixel False = ' '
-
-renderRow :: Sheet -> Int -> Int -> String
-renderRow sheet lastCol row =
-  [ renderPixel $ (`S.member` sheet) (col, row)
-    | col <- [0 .. lastCol]
-  ]
-
-renderSheet :: Sheet -> String
-renderSheet sheet = do
-  let lastCol = S.findMax $ S.map fst sheet
-      lastRow = S.findMax $ S.map snd sheet
-   in unlines [renderRow sheet lastCol row | row <- [0 .. lastRow]]
+   in (pointsToSheet points, folds)
 
 part1 :: Sheet -> [Fold] -> IO ()
 part1 sheet folds =
-  print . S.size $ head folds sheet
+  print . sheetSize $ head folds sheet
 
 part2 :: Sheet -> [Fold] -> IO ()
 part2 sheet folds = do
   let composedFold = foldl1 (flip (.)) folds
-  putStr . renderSheet . composedFold $ sheet
+  print . composedFold $ sheet
 
 main :: IO ()
 main = do
